@@ -1,14 +1,208 @@
 /* styles.css */
 
-#sections-container .section-card {
-  border: 1px solid #dee2e6;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: #f8f9fa;
+:root {
+  --yt-red: #FF0000;
+  --yt-light-gray: #F2F2F2;
+  --yt-dark-gray: #222;
+  --yt-border: #E5E5E5;
+  --yt-black: #000;
+  --yt-white: #fff;
+}
+
+body {
+  background: var(--yt-white);
+  color: var(--yt-black);
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+#app-root {
+  background: var(--yt-white);
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 1.5rem 0.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-card {
+  border: 1.5px solid var(--yt-border);
+  border-radius: 1rem;
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+  background: var(--yt-white);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.btn-primary, .btn-primary:focus {
+  background: var(--yt-red);
+  border-color: var(--yt-red);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 2rem;
+  box-shadow: 0 2px 6px rgba(255,0,0,0.08);
+}
+
+.btn-secondary, .btn-secondary:focus {
+  background: var(--yt-light-gray);
+  border-color: var(--yt-border);
+  color: var(--yt-black);
+  border-radius: 2rem;
+  font-weight: 500;
+}
+
+.btn-danger, .btn-danger:focus {
+  background: var(--yt-red);
+  border-color: var(--yt-red);
+  color: #fff;
+  border-radius: 2rem;
+}
+
+.btn, .form-control {
+  font-family: 'Roboto', Arial, sans-serif;
+  font-size: 1.1rem;
+  border-radius: 2rem;
+}
+
+input[type="file"] {
+  background: var(--yt-white);
+  color: var(--yt-black);
+  border-radius: 1rem;
+  border: 1px solid var(--yt-border);
+}
+
+.input-group > .btn {
+  min-width: 48px;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+  border-radius: 2rem;
+}
+
+.input-group > .btn .material-icons { display: none; }
+
+.input-group > span {
+  background: var(--yt-light-gray);
+  color: var(--yt-black);
+  font-weight: 700;
+  font-size: 1.2rem;
+  border-radius: 2rem;
+}
+
+@media (max-width: 600px) {
+  #app-root {
+    padding: 0.5rem 0.1rem;
+  }
+  .section-card {
+    padding: 0.7rem;
+  }
+  .input-group {
+    flex-direction: row;
+    width: 100%;
+  }
+  .input-group > .btn, .input-group > span {
+    flex: 1 1 0;
+    font-size: 1.1rem;
+    min-width: 0;
+  }
+  .btn, .form-control {
+    font-size: 1rem;
+  }
+  .form-label {
+    font-size: 1rem;
+  }
 }
 
 #results {
-  border-top: 1px solid #dee2e6;
+  border-top: 1.5px solid var(--yt-border);
   padding-top: 1rem;
+}
+
+.alert-info {
+  background: var(--yt-light-gray);
+  color: var(--yt-black);
+  border: none;
+  font-weight: 500;
+  border-radius: 1rem;
+}
+
+h1 {
+  color: var(--yt-red);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: none;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.form-label {
+  color: var(--yt-dark-gray);
+  font-weight: 700;
+}
+
+.list-group-item {
+  background: var(--yt-white);
+  color: var(--yt-black);
+  border: 1px solid var(--yt-border);
+  border-radius: 1rem;
+}
+
+.list-group-item strong {
+  color: var(--yt-red);
+}
+
+.navbar {
+  border-bottom: 1.5px solid var(--yt-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 1rem;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--yt-red) !important;
+  letter-spacing: 1px;
+}
+
+.card {
+  border-radius: 1rem;
+  background: var(--yt-white);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card-body {
+  padding: 1.2rem 1rem;
+}
+
+.badge.bg-secondary {
+  background: var(--yt-light-gray) !important;
+  color: var(--yt-dark-gray) !important;
+  font-weight: 600;
+  border-radius: 1rem;
+}
+
+.alert-primary {
+  background: var(--yt-light-gray);
+  color: var(--yt-red);
+  border: none;
+  font-weight: 700;
+  border-radius: 1rem;
+}
+
+.list-group-flush .list-group-item {
+  background: var(--yt-white);
+  border: none;
+  color: var(--yt-dark-gray);
+  font-size: 1.08rem;
+  border-radius: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    padding: 0.5rem 0.2rem;
+  }
+  .card-body {
+    padding: 0.7rem 0.5rem;
+  }
 } 

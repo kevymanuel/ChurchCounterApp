@@ -26,4 +26,4 @@ async function countPeopleInImage(imagePath) {
   return count;
 }
 
-module.exports = { countPeopleInImage }; 
+module.exports = { countPeopleInImage };
