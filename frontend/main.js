@@ -1,61 +1,233 @@
 // main.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Render the initial UI
-  renderApp();
-});
+let currentPage = 'landing';
+
+function renderNav() {
+  return `
+    <nav class="navbar navbar-expand-lg navbar-light bg-white px-2 mb-4" style="border-radius:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+      <a class="navbar-brand d-flex align-items-center" href="#" id="nav-home">
+        <span class="fw-bold" style="color:#FF0000;letter-spacing:1px;">ChurchCounter</span>
+      </a>
+      <div class="ms-auto">
+        <button class="btn btn-primary ms-2" id="nav-app">Open App</button>
+      </div>
+    </nav>
+  `;
+}
+
+function renderLanding() {
+  return `
+    <div class="container py-4">
+      <div class="text-center mb-4">
+        <h1 class="fw-bold" style="color:#FF0000;">ChurchCounter App</h1>
+        <p class="lead mt-3">Effortlessly count attendees in different sections of your auditorium using AI-powered photo analysis or a simple tap counter.</p>
+      </div>
+      <div class="mb-4">
+        <h4 class="fw-bold">What problem does it solve?</h4>
+        <p>Counting people in large spaces is tedious and error-prone. ChurchCounter lets you break your auditorium into sections, then either tap to count or upload photos for AI vision to analyze—making accurate counting fast and easy.</p>
+      </div>
+      <div class="mb-4">
+        <h4 class="fw-bold">Features</h4>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Set auditorium capacity</li>
+          <li class="list-group-item">Add/remove named sections</li>
+          <li class="list-group-item">For each section: tap to count <b>or</b> upload up to 3 photos</li>
+          <li class="list-group-item">AI vision (OpenAI GPT-4) counts people in photos</li>
+          <li class="list-group-item">See per-section and total counts</li>
+          <li class="list-group-item">Reset to start a new count</li>
+          <li class="list-group-item">Backend automatically resets all data every hour for privacy and data freshness</li>
+        </ul>
+      </div>
+      <div class="mb-4">
+        <h4 class="fw-bold">How does AI vision work?</h4>
+        <p>When you upload photos, ChurchCounter securely sends them to OpenAI's GPT-4 vision model, which analyzes the images and returns a people count for each section. This leverages state-of-the-art AI to make counting fast, accurate, and effortless.</p>
+      </div>
+      <div class="text-center mt-5">
+        <span class="badge bg-secondary p-2">Built with vibe-coding using Cursor and ChatGPT</span>
+      </div>
+      <div class="text-center mt-4">
+        <button class="btn btn-primary btn-lg px-4" id="landing-start-btn">Get Started</button>
+      </div>
+    </div>
+  `;
+}
 
 function renderApp() {
   const root = document.getElementById('app-root');
   root.innerHTML = `
-    <h1 class="mb-4">Church Counter App</h1>
-    <div class="alert alert-info" id="instructions">
-      <strong>Instructions:</strong><br>
-      1. Enter the total auditorium capacity.<br>
-      2. For each section:<br>
-      &nbsp;&nbsp;- Enter a section name.<br>
-      &nbsp;&nbsp;- Either upload up to 3 photos <b>or</b> enter the number of attendees manually (not both).<br>
-      3. Add or remove sections as needed.<br>
-      4. Click <b>Submit</b> to analyze and get the attendee count for each section and the total.
-    </div>
-    <button type="button" class="btn btn-danger my-3" id="reset-btn">Reset All Data</button>
-    <form id="auditorium-form">
-      <div class="mb-3">
-        <label for="capacity" class="form-label">Auditorium Capacity</label>
-        <input type="number" class="form-control" id="capacity" name="capacity" min="1" required>
+    ${renderNav()}
+    <div class="container">
+      <div class="alert alert-info" id="instructions">
+        <strong>Instructions:</strong><br>
+        1. Enter the total auditorium capacity.<br>
+        2. For each section:<br>
+        &nbsp;&nbsp;- Enter a section name.<br>
+        &nbsp;&nbsp;- Either upload up to 3 photos <b>or</b> use the attendee counter (not both).<br>
+        3. Add or remove sections as needed.<br>
+        4. Click <b>Submit</b> to analyze and get the attendee count for each section and the total.
       </div>
-      <div id="sections-container"></div>
-      <button type="button" class="btn btn-secondary my-2" id="add-section-btn">Add Section</button>
-      <button type="submit" class="btn btn-primary my-2">Submit</button>
-    </form>
-    <div id="results" class="mt-4"></div>
+      <button type="button" class="btn btn-danger my-3 w-100" id="reset-btn">Reset All Data</button>
+      <form id="auditorium-form">
+        <div class="mb-3 row g-2 align-items-center">
+          <div class="col-12 col-md-6 mx-auto">
+            <label for="capacity" class="form-label">Auditorium Capacity</label>
+            <input type="number" class="form-control" id="capacity" name="capacity" min="1" required>
+          </div>
+        </div>
+        <div id="sections-container"></div>
+        <div class="d-flex flex-column flex-md-row gap-2">
+          <button type="button" class="btn btn-secondary my-2 flex-fill" id="add-section-btn">Add Section</button>
+          <button type="submit" class="btn btn-primary my-2 flex-fill">Submit</button>
+        </div>
+      </form>
+      <div id="results" class="mt-4"></div>
+    </div>
   `;
   attachEventListeners();
   renderSections();
 }
 
-function attachEventListeners() {
-  document.getElementById('add-section-btn').addEventListener('click', addSection);
-  document.getElementById('auditorium-form').addEventListener('submit', handleSubmit);
-  document.getElementById('reset-btn').addEventListener('click', handleReset);
+function renderSectionCard(section) {
+  return `
+    <div class="section-card">
+      <div class="mb-2 d-flex justify-content-between align-items-center flex-wrap">
+        <strong>Section</strong>
+        <button type="button" class="btn btn-danger btn-sm mt-2 mt-md-0" data-remove="${section.id}">Remove</button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Section Name</label>
+        <input type="text" class="form-control" value="${section.name || ''}" data-name="${section.id}" required>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Attendee Counter</label>
+        <div class="input-group flex-nowrap w-100" style="max-width: 260px;">
+          <button type="button" class="btn btn-outline-secondary" data-minus="${section.id}" title="Decrease count">-</button>
+          <span class="form-control text-center bg-light" style="pointer-events:none;">${section.count}</span>
+          <button type="button" class="btn btn-outline-secondary" data-plus="${section.id}" title="Increase count">+</button>
+        </div>
+        <div class="form-text">Tap + to add, - to remove attendees. Disabled if photos are uploaded.</div>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Upload Photos (max 3)</label>
+        <input type="file" class="form-control" data-files="${section.id}" accept="image/*" multiple ${section.count > 0 ? 'disabled' : ''}>
+        <div class="form-text">${section.files.length} file(s) selected</div>
+      </div>
+    </div>
+  `;
 }
 
-async function handleReset() {
-  if (!confirm('Are you sure you want to reset all data? This cannot be undone.')) return;
-  try {
-    const res = await fetch('http://localhost:4000/reset', { method: 'POST' });
-    if (!res.ok) throw new Error('Failed to reset');
-    // Reset UI state
-    document.getElementById('capacity').value = '';
-    sectionsState = [];
-    sectionCounter = 1;
-    renderSections();
-    showResults('');
-    addSection();
-  } catch (err) {
-    alert('Error resetting data: ' + (err.message || err));
+function renderSections() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = sectionsState.map(renderSectionCard).join('');
+  // Attach remove, name, file, and counter listeners
+  container.querySelectorAll('button[data-remove]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = parseInt(btn.getAttribute('data-remove'));
+      removeSection(id);
+    });
+  });
+  container.querySelectorAll('input[data-name]').forEach(input => {
+    input.addEventListener('input', e => {
+      const id = parseInt(input.getAttribute('data-name'));
+      handleSectionNameChange(id, input.value);
+    });
+  });
+  container.querySelectorAll('input[data-files]').forEach(input => {
+    input.addEventListener('change', e => {
+      const id = parseInt(input.getAttribute('data-files'));
+      handleSectionFilesChange(id, input.files);
+    });
+  });
+  container.querySelectorAll('button[data-plus]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = parseInt(btn.getAttribute('data-plus'));
+      handleSectionCountChange(id, 1);
+    });
+  });
+  container.querySelectorAll('button[data-minus]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = parseInt(btn.getAttribute('data-minus'));
+      handleSectionCountChange(id, -1);
+    });
+  });
+}
+
+function renderResultCard(r) {
+  return `
+    <div class="col-12 col-md-6">
+      <div class="card shadow-sm border-0 mb-2" style="border-radius:1rem;">
+        <div class="card-body">
+          <div class="fw-bold mb-2" style="font-size:1.1rem;">${r.sectionName}</div>
+          <div class="d-flex align-items-center mb-2">
+            <span style="font-size:1.3rem;font-weight:700;">${r.count}</span>
+            <span class="ms-2 badge bg-secondary">±${r.errorMargin}</span>
+          </div>
+          <div class="text-muted" style="font-size:0.95rem;">Confidence: ${r.confidence}%</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderResultsHTML(analysis) {
+  if (!analysis || !analysis.results) return '';
+  let html = '<h4 class="fw-bold mb-3">Results</h4><div class="row g-3">';
+  analysis.results.forEach(r => {
+    html += renderResultCard(r);
+  });
+  html += '</div>';
+  html += `<div class="alert alert-primary mt-3 text-center" style="font-size:1.2rem;font-weight:700;">Total: <span class="text-danger">${analysis.total}</span> attendees</div>`;
+  return html;
+}
+
+function showResults(html) {
+  document.getElementById('results').innerHTML = html;
+}
+
+function attachEventListeners() {
+  if (document.getElementById('nav-home')) {
+    document.getElementById('nav-home').addEventListener('click', e => {
+      e.preventDefault();
+      currentPage = 'landing';
+      render();
+    });
+  }
+  if (document.getElementById('nav-app')) {
+    document.getElementById('nav-app').addEventListener('click', e => {
+      e.preventDefault();
+      currentPage = 'app';
+      render();
+    });
+  }
+  if (document.getElementById('landing-start-btn')) {
+    document.getElementById('landing-start-btn').addEventListener('click', e => {
+      currentPage = 'app';
+      render();
+    });
+  }
+  if (document.getElementById('add-section-btn')) {
+    document.getElementById('add-section-btn').addEventListener('click', addSection);
+  }
+  if (document.getElementById('auditorium-form')) {
+    document.getElementById('auditorium-form').addEventListener('submit', handleSubmit);
+  }
+  if (document.getElementById('reset-btn')) {
+    document.getElementById('reset-btn').addEventListener('click', handleReset);
   }
 }
+
+function render() {
+  const root = document.getElementById('app-root');
+  if (currentPage === 'landing') {
+    root.innerHTML = renderNav() + renderLanding();
+    attachEventListeners();
+  } else {
+    renderApp();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+});
 
 // --- Backend API Calls ---
 
@@ -103,7 +275,7 @@ let sectionCounter = 1;
 
 function addSection() {
   const sectionId = sectionCounter++;
-  sectionsState.push({ id: sectionId, name: '', files: [], manualCount: '' });
+  sectionsState.push({ id: sectionId, name: '', files: [], count: 0 });
   renderSections();
 }
 
@@ -121,13 +293,10 @@ function handleSectionNameChange(id, value) {
   if (section) section.name = value;
 }
 
-function handleSectionManualCountChange(id, value) {
+function handleSectionCountChange(id, delta) {
   const section = sectionsState.find(s => s.id === id);
   if (section) {
-    section.manualCount = value;
-    if (value) {
-      section.files = [];
-    }
+    section.count = Math.max(0, section.count + delta);
     renderSections();
   }
 }
@@ -137,65 +306,10 @@ function handleSectionFilesChange(id, files) {
   if (section) {
     section.files = Array.from(files).slice(0, 3);
     if (section.files.length > 0) {
-      section.manualCount = '';
+      section.count = 0; // Reset counter if photos are selected
     }
     renderSections();
   }
-}
-
-function renderSections() {
-  const container = document.getElementById('sections-container');
-  container.innerHTML = '';
-  sectionsState.forEach(section => {
-    const sectionDiv = document.createElement('div');
-    sectionDiv.className = 'section-card';
-    sectionDiv.innerHTML = `
-      <div class="mb-2 d-flex justify-content-between align-items-center">
-        <strong>Section</strong>
-        <button type="button" class="btn btn-danger btn-sm" data-remove="${section.id}">Remove</button>
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Section Name</label>
-        <input type="text" class="form-control" value="${section.name || ''}" data-name="${section.id}" required>
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Manual Count (optional)</label>
-        <input type="number" class="form-control" data-manual="${section.id}" min="0" value="${section.manualCount || ''}" ${section.files.length > 0 ? 'disabled' : ''}>
-        <div class="form-text">If you enter a manual count, photo upload will be disabled for this section.</div>
-      </div>
-      <div class="mb-2">
-        <label class="form-label">Upload Photos (max 3)</label>
-        <input type="file" class="form-control" data-files="${section.id}" accept="image/*" multiple ${section.manualCount ? 'disabled' : ''}>
-        <div class="form-text">${section.files.length} file(s) selected</div>
-      </div>
-    `;
-    container.appendChild(sectionDiv);
-  });
-  // Attach remove, name, file, and manual count listeners
-  container.querySelectorAll('button[data-remove]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const id = parseInt(btn.getAttribute('data-remove'));
-      removeSection(id);
-    });
-  });
-  container.querySelectorAll('input[data-name]').forEach(input => {
-    input.addEventListener('input', e => {
-      const id = parseInt(input.getAttribute('data-name'));
-      handleSectionNameChange(id, input.value);
-    });
-  });
-  container.querySelectorAll('input[data-files]').forEach(input => {
-    input.addEventListener('change', e => {
-      const id = parseInt(input.getAttribute('data-files'));
-      handleSectionFilesChange(id, input.files);
-    });
-  });
-  container.querySelectorAll('input[data-manual]').forEach(input => {
-    input.addEventListener('input', e => {
-      const id = parseInt(input.getAttribute('data-manual'));
-      handleSectionManualCountChange(id, input.value);
-    });
-  });
 }
 
 // --- Form Submission ---
@@ -212,14 +326,14 @@ async function handleSubmit(e) {
   showResults('Submitting...');
   try {
     await setAuditoriumCapacity(Number(capacity));
-    // Create sections and upload photos or store manual count
+    // Create sections and upload photos or store counter value
     for (const section of sectionsState) {
       const created = await createSection(section.name);
-      if (section.manualCount) {
-        // Store manual count in a global for analysis
-        created.manualCount = Number(section.manualCount);
+      if (section.count > 0) {
+        // Store counter value in a global for analysis
+        created.manualCount = section.count;
         section._backendId = created.id;
-        section._manualCount = Number(section.manualCount);
+        section._manualCount = section.count;
       } else if (section.files.length > 0) {
         await uploadSectionPhotos(created.id, section.files);
         section._backendId = created.id;
@@ -257,22 +371,10 @@ async function analyzeSectionsWithManualCounts() {
   return analysis;
 }
 
-function showResults(html) {
-  document.getElementById('results').innerHTML = html;
-}
-
-function renderResultsHTML(analysis) {
-  if (!analysis || !analysis.results) return '';
-  let html = '<h4>Results</h4><ul class="list-group mb-2">';
-  analysis.results.forEach(r => {
-    html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-      <span><strong>${r.sectionName}</strong> (ID: ${r.sectionId})</span>
-      <span>${r.count} attendees <small class="text-muted">(±${r.errorMargin}, ${r.confidence}% confidence)</small></span>
-    </li>`;
-  });
-  html += '</ul>';
-  html += `<div class="alert alert-info">Total: <strong>${analysis.total}</strong> attendees</div>`;
-  return html;
+function handleReset() {
+  sectionsState = sectionsState.map(s => ({ ...s, count: 0, files: [] }));
+  renderSections();
+  alert('All data reset.');
 }
 
 // --- Initial Section ---
