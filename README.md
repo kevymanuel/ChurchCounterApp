@@ -1,6 +1,6 @@
 # ChurchCounterApp
 
-A web application to count attendees in different sections of an auditorium using either manual input or AI-powered photo analysis (OpenAI GPT-4o vision).
+A vibe-coded web application to count attendees in different sections of an auditorium using either manual input or AI-powered photo analysis (OpenAI GPT-4o vision).
 
 ## Features
 - Set auditorium capacity
