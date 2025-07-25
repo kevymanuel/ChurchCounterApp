@@ -1,0 +1,14 @@
+/* styles.css */
+
+#sections-container .section-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+}
+
+#results {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+} 
