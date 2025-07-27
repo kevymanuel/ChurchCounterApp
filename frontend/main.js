@@ -351,30 +351,69 @@ async function handleSubmit(e) {
 
 // --- Custom Analyze to handle manual counts ---
 async function analyzeSectionsWithManualCounts() {
-  // Call backend as before
-  const analysis = await analyzeSections();
-  // Overwrite results with manual counts where provided
-  if (analysis && analysis.results) {
-    sectionsState.forEach(section => {
+  // Check if we have any manual counts
+  const hasManualCounts = sectionsState.some(section => section._manualCount !== undefined);
+  
+  if (hasManualCounts) {
+    // Use manual counts directly - don't call backend analyze
+    const results = sectionsState.map(section => {
       if (section._manualCount !== undefined) {
-        const result = analysis.results.find(r => r.sectionId === section._backendId);
-        if (result) {
-          result.count = section._manualCount;
-          result.confidence = 100;
-          result.errorMargin = 0;
-        }
+        return {
+          sectionId: section._backendId,
+          sectionName: section.name,
+          count: section._manualCount,
+          confidence: 100,
+          errorMargin: 0
+        };
       }
-    });
-    // Recalculate total
-    analysis.total = analysis.results.reduce((sum, r) => sum + r.count, 0);
+      return null;
+    }).filter(result => result !== null);
+    
+    const total = results.reduce((sum, r) => sum + r.count, 0);
+    return { results, total };
+  } else {
+    // Call backend analyze for photo-based analysis
+    return await analyzeSections();
   }
-  return analysis;
 }
 
-function handleReset() {
-  sectionsState = sectionsState.map(s => ({ ...s, count: 0, files: [] }));
-  renderSections();
-  alert('All data reset.');
+async function handleReset() {
+  try {
+    // Call backend reset endpoint
+    const response = await fetch(`${API_BASE}/reset`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to reset backend data');
+    }
+    
+    const result = await response.json();
+    console.log('Reset result:', result);
+    
+    // Clear frontend state
+    sectionsState = [];
+    sectionCounter = 1; // Reset section counter
+    addSection(); // Add one empty section
+    document.getElementById('capacity').value = '';
+    
+    // Clear results
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+      resultsDiv.innerHTML = '';
+    }
+    
+    // Force re-render to clear any cached counter values
+    renderSections();
+    
+    alert('All data and uploaded files cleared successfully!');
+  } catch (error) {
+    console.error('Reset error:', error);
+    alert('Error resetting data: ' + error.message);
+  }
 }
 
 // --- Initial Section ---
